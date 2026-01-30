@@ -176,5 +176,4 @@ Connected: ~2KB
 
 - Full API: `extras/API_REFERENCE.md`
 - Examples: `examples/`
-- Security: `SECURITY.md`
 - Integration: `extras/INTEGRATION_GUIDE.md`

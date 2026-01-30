@@ -681,5 +681,4 @@ WiFi.setSleep(true);
 
 - Review the [API Reference](extras/API_REFERENCE.md)
 - Check out the [examples](examples/)
-- Read the [Security Guide](SECURITY.md)
 - Join the community discussions
