@@ -23,8 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Callback system for WiFi events (connected, failed, AP mode, reset)
 - Fluent configuration API
 - Manual credential management methods
+- Add custom routes in selected modes (AP and/or Connected)
 - Complete API documentation
-- Three example sketches (Basic, SecureReset, Headless)
+- Four example sketches (Basic, SecureReset, Headless, CustomRoutes)
 - Security guide and best practices
 - Integration guide with common use cases
 - Quick reference card
@@ -42,7 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - extras/API_REFERENCE.md with complete method documentation
 - extras/INTEGRATION_GUIDE.md with real-world examples
 - Comprehensive code comments
-- Three fully-documented example sketches
+- Four fully-documented example sketches
 
 ### Technical Details
 - Memory efficient: ~2KB base overhead, ~15KB during provisioning
@@ -50,14 +51,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Standard Arduino library structure
 - Compatible with all ESP32 variants
 - PlatformIO support included
-
----
-
-## [Unreleased]
-
-### Planned Features
-- AsyncWebServer support for improved performance
-- WPA3 support (when available in ESP-IDF)
 
 ---
 
@@ -100,7 +93,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security Updates
 - Security fixes will be backported to the last major version
 - Critical security issues will trigger immediate patch releases
-- Security advisories will be published in SECURITY.md
 
 ---
 

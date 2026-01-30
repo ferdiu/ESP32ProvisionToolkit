@@ -238,6 +238,30 @@ String ESP32_WiFiProvisioner::getAPIP() const {
     return WiFi.softAPIP().toString();
 }
 
+// ===== Custom Route Introspection =====
+
+bool ESP32_WiFiProvisioner::hasCustomRoutes() const {
+    return !_customRoutes.empty();
+}
+
+bool ESP32_WiFiProvisioner::hasConnectedOnlyRoutes() const {
+    for (const auto& route : _customRoutes) {
+        if (route.scope == ROUTE_CONNECTED_ONLY) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool ESP32_WiFiProvisioner::hasProvisioningOnlyRoutes() const {
+    for (const auto& route : _customRoutes) {
+        if (route.scope == ROUTE_PROVISIONING_ONLY) {
+            return true;
+        }
+    }
+    return false;
+}
+
 // ===== Manual Control =====
 
 bool ESP32_WiFiProvisioner::setCredentials(const String& ssid, const String& password, bool reboot) {
@@ -551,6 +575,8 @@ void ESP32_WiFiProvisioner::setupWebServerProvisioningMode() {
         _webServer->on("/reset", HTTP_POST, staticHandleReset);
     }
 
+    registerCustomRoutes(ROUTE_PROVISIONING_ONLY);
+
     _webServer->onNotFound(staticHandleNotFound);
 
     _webServer->begin();
@@ -751,9 +777,11 @@ void ESP32_WiFiProvisioner::performReset(const char* reason) {
 // ===== Web server controls =====
 
 void ESP32_WiFiProvisioner::startConnectedWebServer() {
+    bool hasCustomRoutes = hasConnectedOnlyRoutes();
+
     // Only start if software reset is enabled
-    if (!_config.httpResetEnabled) {
-        log(LOG_DEBUG, "HTTP reset disabled, not starting connected web server");
+    if (!_config.httpResetEnabled && !hasCustomRoutes) {
+        log(LOG_DEBUG, "HTTP reset disabled and no custom routes provided, not starting connected web server");
         return;
     }
 
@@ -763,18 +791,16 @@ void ESP32_WiFiProvisioner::startConnectedWebServer() {
 
     _webServer = new WebServer(WEB_SERVER_PORT);
 
-    // Reset endpoint
-    _webServer->on("/reset", HTTP_POST, staticHandleReset);
+    log(LOG_DEBUG, "Starting HTTP server for ConnectedMode...");
 
-    // Optional: simple status endpoint (very useful)
-    _webServer->on("/status", HTTP_GET, [this]() {
-        String json = "{";
-        json += "\"state\":\"connected\",";
-        json += "\"ssid\":\"" + _storedSSID + "\",";
-        json += "\"ip\":\"" + WiFi.localIP().toString() + "\"";
-        json += "}";
-        _webServer->send(200, "application/json", json);
-    });
+    // Reset endpoint
+    if (_config.httpResetEnabled) {
+        _webServer->on("/reset", HTTP_POST, staticHandleReset);
+    }
+
+    if (hasCustomRoutes) {
+        registerCustomRoutes(ROUTE_CONNECTED_ONLY);
+    }
 
     _webServer->begin();
 
@@ -837,6 +863,115 @@ void ESP32_WiFiProvisioner::updateLED() {
 void ESP32_WiFiProvisioner::setLEDPattern(uint32_t onTime, uint32_t offTime) {
     // This is handled directly in updateLED for simplicity
     // A more sophisticated implementation would store patterns
+}
+
+// ===== Custom routes =====
+
+void ESP32_WiFiProvisioner::registerCustomRoutes(HttpRouteScope activeScope) {
+    if (!_webServer) return;
+
+    for (const auto& route : _customRoutes) {
+        if (route.scope != activeScope && route.scope != ROUTE_BOTH) {
+            continue;
+        }
+
+        _webServer->on(
+            route.path.c_str(),
+            route.method,
+            [this, route]() {
+
+                // Optional authentication
+                if (route.requiresAuth) {
+                    if (!_config.httpResetAuthRequired) {
+                        _webServer->send(403, "text/plain", "Authentication required");
+                        return;
+                    }
+
+                    String pwd = _webServer->arg("password");
+                    if (!verifyPassword(pwd, _resetPassword)) {
+                        _webServer->send(401, "text/plain", "Invalid password");
+                        return;
+                    }
+                }
+
+                // Call user handler
+                route.handler(*_webServer);
+            }
+        );
+    }
+}
+
+ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::addHttpRoute(
+    const String& path,
+    HTTPMethod method,
+    HttpRouteHandler handler,
+    HttpRouteScope scope,
+    bool requiresAuth
+) {
+    _customRoutes.push_back({
+        path,
+        method,
+        handler,
+        scope,
+        requiresAuth
+    });
+
+    log(LOG_DEBUG, "Custom route registered: %s", path.c_str());
+    return *this;
+}
+
+ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::addGet(
+    const String& path,
+    HttpRouteHandler handler,
+    HttpRouteScope scope,
+    bool requiresAuth
+) {
+    return addHttpRoute(path, HTTP_GET, handler, scope, requiresAuth);
+}
+
+ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::addPost(
+    const String& path,
+    HttpRouteHandler handler,
+    HttpRouteScope scope,
+    bool requiresAuth
+) {
+    return addHttpRoute(path, HTTP_POST, handler, scope, requiresAuth);
+}
+
+ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::addJsonRoute(
+    const String& path,
+    HTTPMethod method,
+    std::function<String()> jsonProvider,
+    HttpRouteScope scope,
+    bool requiresAuth
+) {
+    return addHttpRoute(
+        path,
+        method,
+        [jsonProvider](WebServer& s) {
+            s.send(200, "application/json", jsonProvider());
+        },
+        scope,
+        requiresAuth
+    );
+}
+
+ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::addGetJsonRoute(
+    const String& path,
+    std::function<String()> jsonProvider,
+    HttpRouteScope scope,
+    bool requiresAuth
+) {
+    return addJsonRoute(path, HTTP_GET, jsonProvider, scope, requiresAuth);
+}
+
+ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::addPostJsonRoute(
+    const String& path,
+    std::function<String()> jsonProvider,
+    HttpRouteScope scope,
+    bool requiresAuth
+) {
+    return addJsonRoute(path, HTTP_POST, jsonProvider, scope, requiresAuth);
 }
 
 // ===== Utilities =====

@@ -42,6 +42,7 @@
   "examples": [
     "examples/Basic/Basic.ino",
     "examples/SecureReset/SecureReset.ino",
-    "examples/Headless/Headless.ino"
+    "examples/Headless/Headless.ino",
+    "examples/CustomRoutes/CustomRoutes.ino"
   ]
 }

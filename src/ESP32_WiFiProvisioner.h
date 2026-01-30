@@ -25,6 +25,8 @@
 #include <ESPmDNS.h>
 #include <esp_system.h>
 #include <mbedtls/md.h>
+#include <functional>
+#include <vector>
 
 // Library version
 #define WIFI_PROVISIONER_VERSION "1.0.0"
@@ -65,6 +67,24 @@ enum ResetResult {
     RESET_AUTH_FAILED = 1,
     RESET_DISABLED = 2,
     RESET_ERROR = 3
+};
+
+// Custom routes scopes
+enum HttpRouteScope {
+    ROUTE_PROVISIONING_ONLY,
+    ROUTE_CONNECTED_ONLY,
+    ROUTE_BOTH
+};
+
+// Route descriptor
+typedef std::function<void(WebServer&)> HttpRouteHandler;
+
+struct HttpRoute {
+    String path;
+    HTTPMethod method;
+    HttpRouteHandler handler;
+    HttpRouteScope scope;
+    bool requiresAuth;
 };
 
 // Configuration structure
@@ -164,6 +184,46 @@ public:
     ESP32_WiFiProvisioner& enableMDNS(const String& name);
     ESP32_WiFiProvisioner& enableDoubleRebootDetect(uint32_t windowMs = DEFAULT_DOUBLE_REBOOT_WINDOW_MS);
 
+    // Custom routes
+    ESP32_WiFiProvisioner& addHttpRoute(
+        const String& path,
+        HTTPMethod method,
+        HttpRouteHandler handler,
+        HttpRouteScope scope = ROUTE_CONNECTED_ONLY,
+        bool requiresAuth = false
+    );
+    ESP32_WiFiProvisioner& addGet(
+        const String& path,
+        HttpRouteHandler handler,
+        HttpRouteScope scope = ROUTE_CONNECTED_ONLY,
+        bool requiresAuth = false
+    );
+    ESP32_WiFiProvisioner& addPost(
+        const String& path,
+        HttpRouteHandler handler,
+        HttpRouteScope scope = ROUTE_CONNECTED_ONLY,
+        bool requiresAuth = false
+    );
+    ESP32_WiFiProvisioner& addJsonRoute(
+        const String& path,
+        HTTPMethod method,
+        std::function<String()> jsonProvider,
+        HttpRouteScope scope = ROUTE_CONNECTED_ONLY,
+        bool requiresAuth = false
+    );
+    ESP32_WiFiProvisioner& addGetJsonRoute(
+        const String& path,
+        std::function<String()> jsonProvider,
+        HttpRouteScope scope = ROUTE_CONNECTED_ONLY,
+        bool requiresAuth = false
+    );
+    ESP32_WiFiProvisioner& addPostJsonRoute(
+        const String& path,
+        std::function<String()> jsonProvider,
+        HttpRouteScope scope = ROUTE_CONNECTED_ONLY,
+        bool requiresAuth = false
+    );
+
     // Logging
     ESP32_WiFiProvisioner& setLogLevel(LogLevel level);
 
@@ -185,6 +245,11 @@ public:
     String getSSID() const;
     IPAddress getLocalIP() const;
     String getAPIP() const;
+
+    // ===== Custom Route Introspection =====
+    bool hasCustomRoutes() const;
+    bool hasConnectedOnlyRoutes() const;
+    bool hasProvisioningOnlyRoutes() const;
 
     // ===== Manual Control =====
     bool setCredentials(const String& ssid, const String& password, bool reboot = true);
@@ -211,6 +276,9 @@ private:
     // Network components
     DNSServer* _dnsServer;
     WebServer* _webServer;
+
+    // Custom routes
+    std::vector<HttpRoute> _customRoutes;
 
     // Callbacks
     WiFiConnectedCallback _onConnectedCallback;
@@ -263,6 +331,9 @@ private:
     // Connected-mode web server
     void startConnectedWebServer();
     void stopWebServer();
+
+    // Custom routes helpers
+    void registerCustomRoutes(HttpRouteScope activeScope);
 
     // UX
     void updateLED();

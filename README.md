@@ -147,6 +147,8 @@ Authenticated:
 curl -X POST http://device-ip/reset -d "password=YOUR_RESET_PASSWORD"
 ```
 
+> **NOTE:** If any time you reset the software you change this password it can still be considered secure to send the password in plain-text.
+
 #### UX Features
 
 | Method | Parameters | Description |
@@ -476,11 +478,12 @@ void loop() {
 
 ## Examples
 
-The library includes three complete examples:
+The library includes four complete examples:
 
 1. **Basic** - Minimal setup for getting started
 2. **SecureReset** - All security features enabled
 3. **Headless** - Production IoT device configuration
+4. **CustomRoutes** - The basic example with additional user-defined routes
 
 See `/examples` directory for complete code.
 
@@ -514,11 +517,6 @@ MIT License - See LICENSE file for details
 - Multiple reset mechanisms
 - Production-ready features
 - Comprehensive documentation
-
-## Roadmap
-
-- [ ] AsyncWebServer support for better performance
-- [ ] WPA3 support
 
 ## Credits
 

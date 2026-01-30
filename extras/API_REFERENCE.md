@@ -194,8 +194,8 @@ provisioner.setAutoWipeOnMaxRetries(false); // Keep credentials
 
 ```cpp
 ESP32_WiFiProvisioner& enableHardwareReset(
-    int8_t pin, 
-    uint32_t durationMs = 5000, 
+    int8_t pin,
+    uint32_t durationMs = 5000,
     bool activeLow = true
 )
 ```
@@ -286,7 +286,7 @@ Enables password-protected HTTP reset.
 
 **Default:** Disabled
 
-**Note:** Password must be set during provisioning via web interface.
+**Note:** Password must be set during provisioning via web interface. Please, note that this password is meant to be used only once during reset; since it is sent in plain-text this means that after sending it once it HAS to be considered compromised. This is still secure if you only use it for resetting the device and you keep it changing between device resets.
 
 **HTTP Endpoint:** `POST /reset` with `password` parameter
 
@@ -690,7 +690,7 @@ Gets the AP mode IP address.
 **Example:**
 ```cpp
 if (provisioner.isProvisioning()) {
-    Serial.printf("Configure at: http://%s\n", 
+    Serial.printf("Configure at: http://%s\n",
         provisioner.getAPIP().c_str());
 }
 ```
@@ -703,8 +703,8 @@ if (provisioner.isProvisioning()) {
 
 ```cpp
 bool setCredentials(
-    const String& ssid, 
-    const String& password, 
+    const String& ssid,
+    const String& password,
     bool reboot = true
 )
 ```
@@ -808,6 +808,304 @@ Callback type for device reset.
 
 ---
 
+## Custom HTTP Routes
+
+The ESP32_WiFiProvisioner allows applications to **register custom HTTP endpoints** without accessing the internal web server directly.
+
+Routes are:
+
+* Registered **before `begin()`**
+* Stored internally
+* Automatically attached when the web server starts
+* Scoped to provisioning mode, connected mode, or both
+* Optionally protected by authentication
+
+This enables clean extension points for:
+
+* Diagnostics
+* Status APIs
+* OTA updates
+* Device control endpoints
+
+---
+
+### Route Scope
+
+#### HttpRouteScope
+
+```cpp
+enum HttpRouteScope {
+    ROUTE_PROVISIONING_ONLY,  // Active only during AP provisioning mode
+    ROUTE_CONNECTED_ONLY,     // Active only when connected to WiFi
+    ROUTE_BOTH                // Active in both modes
+}
+```
+
+Controls **when** a route is available.
+
+**Default:** `ROUTE_CONNECTED_ONLY`
+
+---
+
+### Core Route Registration
+
+#### addHttpRoute
+
+```cpp
+ESP32_WiFiProvisioner& addHttpRoute(
+    const String& path,
+    HTTPMethod method,
+    HttpRouteHandler handler,
+    HttpRouteScope scope = ROUTE_CONNECTED_ONLY,
+    bool requiresAuth = false
+)
+```
+
+Registers a custom HTTP route.
+
+**Parameters:**
+
+* `path` – URL path (e.g. `"/status"`)
+* `method` – HTTP method (`HTTP_GET`, `HTTP_POST`, etc.)
+* `handler` – Route handler function
+* `scope` – When the route is active
+* `requiresAuth` – Whether authentication is required
+
+**Returns:** Reference to this instance
+
+**Notes:**
+
+* Routes are applied automatically when the web server starts
+* Routes persist across server restarts
+* No direct access to the internal WebServer is required
+
+**Example:**
+
+```cpp
+provisioner.addHttpRoute(
+    "/uptime",
+    HTTP_GET,
+    [](WebServer& server) {
+        server.send(200, "text/plain", String(millis()));
+    }
+);
+```
+
+---
+
+### Convenience Route Helpers
+
+#### addGet
+
+```cpp
+ESP32_WiFiProvisioner& addGet(
+    const String& path,
+    HttpRouteHandler handler,
+    HttpRouteScope scope = ROUTE_CONNECTED_ONLY,
+    bool requiresAuth = false
+)
+```
+
+Registers a `GET` route.
+
+**Example:**
+
+```cpp
+provisioner.addGet("/ping", [](WebServer& s) {
+    s.send(200, "text/plain", "pong");
+});
+```
+
+---
+
+#### addPost
+
+```cpp
+ESP32_WiFiProvisioner& addPost(
+    const String& path,
+    HttpRouteHandler handler,
+    HttpRouteScope scope = ROUTE_CONNECTED_ONLY,
+    bool requiresAuth = false
+)
+```
+
+Registers a `POST` route.
+
+**Example:**
+
+```cpp
+provisioner.addPost("/reboot", [](WebServer& s) {
+    s.send(200, "text/plain", "Rebooting");
+    ESP.restart();
+}, ROUTE_CONNECTED_ONLY, true);
+```
+
+---
+
+### JSON Route Helpers
+
+JSON routes simplify the creation of REST-style endpoints by automatically setting the response content type.
+
+---
+
+#### addJsonRoute
+
+```cpp
+ESP32_WiFiProvisioner& addJsonRoute(
+    const String& path,
+    HTTPMethod method,
+    std::function<String()> jsonProvider,
+    HttpRouteScope scope = ROUTE_CONNECTED_ONLY,
+    bool requiresAuth = false
+)
+```
+
+Registers a JSON-producing route.
+
+**Parameters:**
+
+* `jsonProvider` – Function returning a JSON-formatted string
+
+**Example:**
+
+```cpp
+provisioner.addJsonRoute(
+    "/status",
+    HTTP_GET,
+    []() {
+        return "{\"state\":\"ok\",\"uptime\":" + String(millis()) + "}";
+    }
+);
+```
+
+---
+
+#### addGetJsonRoute
+
+```cpp
+ESP32_WiFiProvisioner& addGetJsonRoute(
+    const String& path,
+    std::function<String()> jsonProvider,
+    HttpRouteScope scope = ROUTE_CONNECTED_ONLY,
+    bool requiresAuth = false
+)
+```
+
+Registers a JSON `GET` route.
+
+**Example:**
+
+```cpp
+provisioner.addGetJsonRoute("/info", []() {
+    return "{\"device\":\"esp32\",\"version\":\"1.0.0\"}";
+});
+```
+
+---
+
+#### addPostJsonRoute
+
+```cpp
+ESP32_WiFiProvisioner& addPostJsonRoute(
+    const String& path,
+    std::function<String()> jsonProvider,
+    HttpRouteScope scope = ROUTE_CONNECTED_ONLY,
+    bool requiresAuth = false
+)
+```
+
+Registers a JSON `POST` route.
+
+**Example:**
+
+```cpp
+provisioner.addPostJsonRoute(
+    "/metrics",
+    []() {
+        return "{\"heap\":" + String(ESP.getFreeHeap()) + "}";
+    },
+    ROUTE_CONNECTED_ONLY,
+    true
+);
+```
+
+---
+
+## Custom Route Introspection
+
+Utility methods for inspecting registered custom HTTP routes.
+
+---
+
+### hasCustomRoutes
+
+```cpp
+bool hasCustomRoutes() const
+```
+
+Checks whether any custom HTTP routes have been registered.
+
+**Returns:**
+
+* `true` if at least one custom route exists
+* `false` otherwise
+
+**Example:**
+
+```cpp
+if (provisioner.hasCustomRoutes()) {
+    Serial.println("Custom routes registered");
+}
+```
+
+---
+
+### hasConnectedOnlyRoutes
+
+```cpp
+bool hasConnectedOnlyRoutes() const
+```
+
+Checks whether any custom routes are registered with `ROUTE_CONNECTED_ONLY` scope.
+
+**Returns:**
+
+* `true` if at least one connected-only route exists
+* `false` otherwise
+
+**Example:**
+
+```cpp
+if (provisioner.hasConnectedOnlyRoutes()) {
+    // Start web server in connected mode
+}
+```
+
+---
+
+### hasProvisioningOnlyRoutes
+
+```cpp
+bool hasProvisioningOnlyRoutes() const
+```
+
+Checks whether any custom routes are registered with `ROUTE_PROVISIONING_ONLY` scope.
+
+**Returns:**
+
+* `true` if at least one provisioning-only route exists
+* `false` otherwise
+
+**Example:**
+
+```cpp
+if (provisioner.hasProvisioningOnlyRoutes()) {
+    // Start web server in provisioning mode
+}
+```
+
+---
+
 ## Enumerations
 
 ### LogLevel
@@ -843,6 +1141,20 @@ Internal state machine states.
 
 ---
 
+### HttpRouteScope
+
+```cpp
+enum HttpRouteScope {
+    ROUTE_PROVISIONING_ONLY,
+    ROUTE_CONNECTED_ONLY,
+    ROUTE_BOTH
+};
+```
+
+Used to provide custom routes only on selected scope(s).
+
+---
+
 ## Structures
 
 ### WiFiProvisionerConfig
@@ -853,22 +1165,22 @@ struct WiFiProvisionerConfig {
     String apName;
     String apPassword;
     uint32_t apTimeout;
-    
+
     // Connection settings
     uint8_t maxRetries;
     uint32_t retryDelay;
     bool autoWipeOnMaxRetries;
-    
+
     // Hardware reset
     bool hardwareResetEnabled;
     int8_t resetButtonPin;
     uint32_t resetButtonDuration;
     bool resetButtonActiveLow;
-    
+
     // Software reset
     bool httpResetEnabled;
     bool httpResetAuthRequired;
-    
+
     // UX Features
     bool ledEnabled;
     int8_t ledPin;
@@ -877,7 +1189,7 @@ struct WiFiProvisionerConfig {
     String mdnsName;
     bool doubleRebootDetectEnabled;
     uint32_t doubleRebootWindow;
-    
+
     // Logging
     LogLevel logLevel;
 }
