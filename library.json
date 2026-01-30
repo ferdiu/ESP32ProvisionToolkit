@@ -1,0 +1,47 @@
+{
+  "name": "ESP32_WiFiProvisioner",
+  "version": "1.0.0",
+  "description": "Production-ready WiFi provisioning and recovery system for ESP32 with captive portal, multiple reset mechanisms, and configurable UX enhancements",
+  "keywords": [
+    "wifi",
+    "provisioning",
+    "esp32",
+    "captive-portal",
+    "iot",
+    "configuration",
+    "recovery",
+    "nvs",
+    "web-server",
+    "reset"
+  ],
+  "authors": [
+    {
+      "name": "Federico Manzella",
+      "email": "ferdiu.manzella@gmail.com",
+      "url": "https://github.com/ferdiu"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ferdiu/ESP32_WiFiProvisioner.git"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/ferdiu/ESP32_WiFiProvisioner",
+  "frameworks": "arduino",
+  "platforms": "espressif32",
+  "dependencies": [],
+  "export": {
+    "exclude": [
+      ".git",
+      ".github",
+      "extras/docs",
+      "test",
+      "tests"
+    ]
+  },
+  "examples": [
+    "examples/Basic/Basic.ino",
+    "examples/SecureReset/SecureReset.ino",
+    "examples/Headless/Headless.ino"
+  ]
+}
