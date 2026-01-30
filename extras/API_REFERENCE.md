@@ -91,6 +91,8 @@ Sets password for the configuration access point.
 
 **Security Note:** Use strong passwords in production!
 
+**Note:** As required by the WPA2 specifications, the password has to be at least of 8 characters long.
+
 **Example:**
 ```cpp
 provisioner.setAPPassword("ConfigPass123");

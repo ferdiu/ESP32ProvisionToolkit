@@ -514,10 +514,15 @@ void ESP32_WiFiProvisioner::startProvisioningMode() {
     // Start AP
     WiFi.mode(WIFI_AP);
 
-    if (_config.apPassword.length() > 0) {
+    if (_config.apPassword.length() >= 8) { // Valid password
         WiFi.softAP(apName.c_str(), _config.apPassword.c_str());
         log(LOG_INFO, "AP started: %s (password protected)", apName.c_str());
-    } else {
+    } else if (_config.apPassword.length() >= 1) { // Password too short
+        WiFi.softAP(apName.c_str());
+        log(LOG_ERROR,
+            "AP password too short (%d chars). WPA2 requires at least 8. Starting OPEN AP.",
+            _config.apPassword.length());
+    } else { // Open network
         WiFi.softAP(apName.c_str());
         log(LOG_INFO, "AP started: %s (open network)", apName.c_str());
     }
@@ -787,6 +792,11 @@ void ESP32_WiFiProvisioner::startConnectedWebServer() {
 
     if (_webServer) {
         return; // Already running
+    }
+
+    // Load reset password if needed
+    if (_config.httpResetAuthRequired) {
+        loadResetPassword();
     }
 
     _webServer = new WebServer(WEB_SERVER_PORT);
