@@ -1,6 +1,6 @@
 # Integration Guide
 
-This guide walks through integrating ESP32_WiFiProvisioner into your project.
+This guide walks through integrating ESP32ProvisionToolkit into your project.
 
 ## Table of Contents
 
@@ -17,7 +17,7 @@ This guide walks through integrating ESP32_WiFiProvisioner into your project.
 
 1. **Download the Library**
    - Download ZIP from GitHub releases
-   - Or clone: `git clone https://github.com/ferdiu/ESP32_WiFiProvisioner.git`
+   - Or clone: `git clone https://github.com/ferdiu/ESP32ProvisionToolkit.git`
 
 2. **Install in Arduino IDE**
    - Sketch → Include Library → Add .ZIP Library
@@ -26,10 +26,10 @@ This guide walks through integrating ESP32_WiFiProvisioner into your project.
 
 3. **Verify Installation**
    ```cpp
-   #include <ESP32_WiFiProvisioner.h>
+   #include <ESP32ProvisionToolkit.h>
 
    void setup() {
-     ESP32_WiFiProvisioner provisioner;
+     ESP32ProvisionToolkit provisioner;
      // Compiles successfully = installed correctly
    }
    ```
@@ -43,12 +43,12 @@ This guide walks through integrating ESP32_WiFiProvisioner into your project.
    board = esp32dev
    framework = arduino
    lib_deps =
-       https://github.com/ferdiu/ESP32_WiFiProvisioner.git
+       https://github.com/ferdiu/ESP32ProvisionToolkit.git
    ```
 
 2. **Or Install Manually**
    ```bash
-   pio lib install ESP32_WiFiProvisioner
+   pio lib install ESP32ProvisionToolkit
    ```
 
 3. **Verify Installation**
@@ -61,7 +61,7 @@ This guide walks through integrating ESP32_WiFiProvisioner into your project.
 ### Step 1: Include Header
 
 ```cpp
-#include <ESP32_WiFiProvisioner.h>
+#include <ESP32ProvisionToolkit.h>
 ```
 
 ### Step 2: Create Instance
@@ -69,7 +69,7 @@ This guide walks through integrating ESP32_WiFiProvisioner into your project.
 Create a global instance:
 
 ```cpp
-ESP32_WiFiProvisioner provisioner;
+ESP32ProvisionToolkit provisioner;
 ```
 
 **Important:** Must be global, not local to `setup()`.
@@ -100,9 +100,9 @@ void loop() {
 ### Complete Minimal Example
 
 ```cpp
-#include <ESP32_WiFiProvisioner.h>
+#include <ESP32ProvisionToolkit.h>
 
-ESP32_WiFiProvisioner provisioner;
+ESP32ProvisionToolkit provisioner;
 
 void setup() {
   Serial.begin(115200);
@@ -126,9 +126,9 @@ void loop() {
 ### 1. IoT Sensor Device
 
 ```cpp
-#include <ESP32_WiFiProvisioner.h>
+#include <ESP32ProvisionToolkit.h>
 
-ESP32_WiFiProvisioner provisioner;
+ESP32ProvisionToolkit provisioner;
 unsigned long lastReading = 0;
 const unsigned long READING_INTERVAL = 60000; // 1 minute
 
@@ -176,10 +176,10 @@ void readAndSendData() {
 ### 2. Smart Home Device
 
 ```cpp
-#include <ESP32_WiFiProvisioner.h>
+#include <ESP32ProvisionToolkit.h>
 #include <PubSubClient.h>
 
-ESP32_WiFiProvisioner provisioner;
+ESP32ProvisionToolkit provisioner;
 WiFiClient wifiClient;
 PubSubClient mqtt(wifiClient);
 
@@ -241,10 +241,10 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
 ### 3. Remote Monitoring Station
 
 ```cpp
-#include <ESP32_WiFiProvisioner.h>
+#include <ESP32ProvisionToolkit.h>
 #include <HTTPClient.h>
 
-ESP32_WiFiProvisioner provisioner;
+ESP32ProvisionToolkit provisioner;
 
 const char* SERVER_URL = "https://api.example.com/data";
 const char* API_KEY = "your-api-key";
@@ -312,9 +312,9 @@ void sendUpdate() {
 ### 4. Battery-Powered Device
 
 ```cpp
-#include <ESP32_WiFiProvisioner.h>
+#include <ESP32ProvisionToolkit.h>
 
-ESP32_WiFiProvisioner provisioner;
+ESP32ProvisionToolkit provisioner;
 
 #define SLEEP_DURATION_SECONDS 3600  // 1 hour
 
@@ -376,10 +376,10 @@ float readBattery() {
 If you need additional HTTP endpoints alongside provisioning:
 
 ```cpp
-#include <ESP32_WiFiProvisioner.h>
+#include <ESP32ProvisionToolkit.h>
 #include <WebServer.h>
 
-ESP32_WiFiProvisioner provisioner;
+ESP32ProvisionToolkit provisioner;
 WebServer server(8080);  // Use different port
 
 void setup() {
@@ -411,10 +411,10 @@ void loop() {
 ### Integration with OTA Updates
 
 ```cpp
-#include <ESP32_WiFiProvisioner.h>
+#include <ESP32ProvisionToolkit.h>
 #include <ArduinoOTA.h>
 
-ESP32_WiFiProvisioner provisioner;
+ESP32ProvisionToolkit provisioner;
 
 void setup() {
   provisioner
@@ -460,9 +460,9 @@ void loop() {
 ### Conditional Compilation for Different Builds
 
 ```cpp
-#include <ESP32_WiFiProvisioner.h>
+#include <ESP32ProvisionToolkit.h>
 
-ESP32_WiFiProvisioner provisioner;
+ESP32ProvisionToolkit provisioner;
 
 void setup() {
   provisioner.setAPName("MyDevice");

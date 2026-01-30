@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the ESP32_WiFiProvisioner library will be documented in this file.
+All notable changes to the ESP32ProvisionToolkit library will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2026-01-30
 
 ### Added
-- Initial release of ESP32_WiFiProvisioner library
+- Initial release of ESP32ProvisionToolkit library
 - Non-blocking WiFi provisioning state machine
 - Captive portal with responsive web interface
 - Persistent credential storage in NVS
@@ -120,6 +120,6 @@ Example:
 
 ## Links
 
-- [Repository](https://github.com/ferdiu/ESP32_WiFiProvisioner)
-- [Issues](https://github.com/ferdiu/ESP32_WiFiProvisioner/issues)
-- [Releases](https://github.com/ferdiu/ESP32_WiFiProvisioner/releases)
+- [Repository](https://github.com/ferdiu/ESP32ProvisionToolkit)
+- [Issues](https://github.com/ferdiu/ESP32ProvisionToolkit/issues)
+- [Releases](https://github.com/ferdiu/ESP32ProvisionToolkit/releases)

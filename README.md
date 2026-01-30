@@ -44,15 +44,15 @@ A production-ready WiFi provisioning and recovery library for ESP32 devices. Des
 Add to `platformio.ini`:
 ```ini
 lib_deps =
-    https://github.com/ferdiu/ESP32_WiFiProvisioner.git
+    https://github.com/ferdiu/ESP32ProvisionToolkit.git
 ```
 
 ## Quick Start
 
 ```cpp
-#include <ESP32_WiFiProvisioner.h>
+#include <ESP32ProvisionToolkit.h>
 
-ESP32_WiFiProvisioner provisioner;
+ESP32ProvisionToolkit provisioner;
 
 void setup() {
   Serial.begin(115200);
@@ -403,17 +403,17 @@ The library uses the `wifiprov` namespace by default. To avoid conflicts:
 
 ```cpp
 // Currently not configurable, but you can modify the source:
-// In ESP32_WiFiProvisioner.cpp:
+// In ESP32ProvisionToolkit.cpp:
 // #define NVS_NAMESPACE "myapp_wifi"
 ```
 
 ### Integration with MQTT
 
 ```cpp
-#include <ESP32_WiFiProvisioner.h>
+#include <ESP32ProvisionToolkit.h>
 #include <PubSubClient.h>
 
-ESP32_WiFiProvisioner provisioner;
+ESP32ProvisionToolkit provisioner;
 WiFiClient wifiClient;
 PubSubClient mqtt(wifiClient);
 
@@ -439,7 +439,7 @@ void loop() {
 ### OTA Updates Integration
 
 ```cpp
-#include <ESP32_WiFiProvisioner.h>
+#include <ESP32ProvisionToolkit.h>
 #include <ArduinoOTA.h>
 
 void setup() {
@@ -489,7 +489,7 @@ See `/examples` directory for complete code.
 
 ## API Reference
 
-See the header file `ESP32_WiFiProvisioner.h` for complete API documentation with detailed comments.
+See the header file `ESP32ProvisionToolkit.h` for complete API documentation with detailed comments.
 
 ## Contributing
 
@@ -506,7 +506,7 @@ MIT License - See LICENSE file for details
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/ferdiu/ESP32_WiFiProvisioner/issues)
+- **Issues**: [GitHub Issues](https://github.com/ferdiu/ESP32ProvisionToolkit/issues)
 - **Email**: ferdiu.manzella@gmail.com
 
 ## Changelog

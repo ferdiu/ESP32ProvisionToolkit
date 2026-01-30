@@ -1,12 +1,12 @@
 #######################################
-# Syntax Coloring Map For ESP32_WiFiProvisioner
+# Syntax Coloring Map For ESP32ProvisionToolkit
 #######################################
 
 #######################################
 # Datatypes (KEYWORD1)
 #######################################
 
-ESP32_WiFiProvisioner	KEYWORD1
+ESP32ProvisionToolkit	KEYWORD1
 WiFiProvisionerConfig	KEYWORD1
 LogLevel	KEYWORD1
 ProvisionerState	KEYWORD1

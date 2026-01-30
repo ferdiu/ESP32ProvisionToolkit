@@ -1,19 +1,19 @@
 /*
  * Basic WiFi Provisioning Example
- * 
+ *
  * This example demonstrates the minimal setup required to use
- * the ESP32_WiFiProvisioner library.
- * 
+ * the ESP32ProvisionToolkit library.
+ *
  * Features demonstrated:
  * - Automatic WiFi connection with stored credentials
  * - Captive portal for initial configuration
  * - Automatic retry on connection failure
  * - LED status indicator
- * 
+ *
  * Hardware required:
  * - ESP32 development board
  * - Optional: LED on GPIO 2 (built-in LED on most boards)
- * 
+ *
  * Usage:
  * 1. Upload this sketch to your ESP32
  * 2. If no credentials are stored, the device will create a WiFi access point
@@ -23,10 +23,10 @@
  * 6. The device will save the credentials and connect
  */
 
-#include <ESP32_WiFiProvisioner.h>
+#include <ESP32ProvisionToolkit.h>
 
 // Create provisioner instance
-ESP32_WiFiProvisioner provisioner;
+ESP32ProvisionToolkit provisioner;
 
 // LED pin (GPIO 2 is the built-in LED on most ESP32 boards)
 const int LED_PIN = 2;
@@ -34,9 +34,9 @@ const int LED_PIN = 2;
 void setup() {
   Serial.begin(115200);
   delay(1000);
-  
+
   Serial.println("\n\n=== ESP32 WiFi Provisioner - Basic Example ===\n");
-  
+
   // Configure the provisioner with fluent API
   provisioner
     .setAPName("MyESP32")              // Custom AP name (will append MAC suffix)
@@ -50,17 +50,17 @@ void setup() {
     .onFailed(onWiFiFailed)             // Callback when connection fails
     .onAPMode(onAPModeStarted)          // Callback when AP mode starts
     .begin();                           // Start the provisioner
-  
+
   Serial.println("Provisioner initialized");
 }
 
 void loop() {
   // Call loop() regularly to handle WiFi state machine
   provisioner.loop();
-  
+
   // Your application code here
   // The provisioner runs non-blocking, so you can do other work
-  
+
   if (provisioner.isConnected()) {
     // Do something when connected
     // This is where your main application logic would go

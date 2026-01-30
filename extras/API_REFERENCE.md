@@ -1,6 +1,6 @@
 # API Reference
 
-Complete API documentation for ESP32_WiFiProvisioner library.
+Complete API documentation for ESP32ProvisionToolkit library.
 
 ## Table of Contents
 
@@ -15,46 +15,46 @@ Complete API documentation for ESP32_WiFiProvisioner library.
 ## Class Overview
 
 ```cpp
-class ESP32_WiFiProvisioner
+class ESP32ProvisionToolkit
 ```
 
 Main class providing WiFi provisioning and recovery functionality.
 
-**Header:** `ESP32_WiFiProvisioner.h`
+**Header:** `ESP32ProvisionToolkit.h`
 
 **Namespace:** Global
 
 ### Constructor
 
 ```cpp
-ESP32_WiFiProvisioner()
+ESP32ProvisionToolkit()
 ```
 
 Creates a new provisioner instance. Initializes internal state.
 
 **Example:**
 ```cpp
-ESP32_WiFiProvisioner provisioner;
+ESP32ProvisionToolkit provisioner;
 ```
 
 ### Destructor
 
 ```cpp
-~ESP32_WiFiProvisioner()
+~ESP32ProvisionToolkit()
 ```
 
 Cleans up allocated resources (DNS server, web server).
 
 ## Configuration Methods
 
-All configuration methods return `ESP32_WiFiProvisioner&` for method chaining.
+All configuration methods return `ESP32ProvisionToolkit&` for method chaining.
 
 ### Access Point Configuration
 
 #### setAPName
 
 ```cpp
-ESP32_WiFiProvisioner& setAPName(const String& name)
+ESP32ProvisionToolkit& setAPName(const String& name)
 ```
 
 Sets the base name for the configuration access point.
@@ -77,7 +77,7 @@ provisioner.setAPName("MyDevice");
 #### setAPPassword
 
 ```cpp
-ESP32_WiFiProvisioner& setAPPassword(const String& password)
+ESP32ProvisionToolkit& setAPPassword(const String& password)
 ```
 
 Sets password for the configuration access point.
@@ -103,7 +103,7 @@ provisioner.setAPPassword("ConfigPass123");
 #### setAPTimeout
 
 ```cpp
-ESP32_WiFiProvisioner& setAPTimeout(uint32_t milliseconds)
+ESP32ProvisionToolkit& setAPTimeout(uint32_t milliseconds)
 ```
 
 Sets timeout for AP mode before attempting reconnection.
@@ -127,7 +127,7 @@ provisioner.setAPTimeout(180000); // 3 minutes
 #### setMaxRetries
 
 ```cpp
-ESP32_WiFiProvisioner& setMaxRetries(uint8_t retries)
+ESP32ProvisionToolkit& setMaxRetries(uint8_t retries)
 ```
 
 Sets maximum number of connection retry attempts.
@@ -149,7 +149,7 @@ provisioner.setMaxRetries(20); // Try 20 times
 #### setRetryDelay
 
 ```cpp
-ESP32_WiFiProvisioner& setRetryDelay(uint32_t milliseconds)
+ESP32ProvisionToolkit& setRetryDelay(uint32_t milliseconds)
 ```
 
 Sets delay between connection retry attempts.
@@ -171,7 +171,7 @@ provisioner.setRetryDelay(5000); // 5 second delay
 #### setAutoWipeOnMaxRetries
 
 ```cpp
-ESP32_WiFiProvisioner& setAutoWipeOnMaxRetries(bool enable)
+ESP32ProvisionToolkit& setAutoWipeOnMaxRetries(bool enable)
 ```
 
 Configures whether to clear credentials after max retries exceeded.
@@ -195,7 +195,7 @@ provisioner.setAutoWipeOnMaxRetries(false); // Keep credentials
 #### enableHardwareReset
 
 ```cpp
-ESP32_WiFiProvisioner& enableHardwareReset(
+ESP32ProvisionToolkit& enableHardwareReset(
     int8_t pin,
     uint32_t durationMs = 5000,
     bool activeLow = true
@@ -226,7 +226,7 @@ provisioner.enableHardwareReset(0, 5000, true);
 #### disableHardwareReset
 
 ```cpp
-ESP32_WiFiProvisioner& disableHardwareReset()
+ESP32ProvisionToolkit& disableHardwareReset()
 ```
 
 Disables hardware button reset.
@@ -245,7 +245,7 @@ provisioner.disableHardwareReset();
 #### enableHttpReset
 
 ```cpp
-ESP32_WiFiProvisioner& enableHttpReset(bool enable)
+ESP32ProvisionToolkit& enableHttpReset(bool enable)
 ```
 
 Enables simple unauthenticated HTTP reset.
@@ -276,7 +276,7 @@ curl -X POST http://192.168.4.1/reset
 #### enableAuthenticatedHttpReset
 
 ```cpp
-ESP32_WiFiProvisioner& enableAuthenticatedHttpReset(bool enable)
+ESP32ProvisionToolkit& enableAuthenticatedHttpReset(bool enable)
 ```
 
 Enables password-protected HTTP reset.
@@ -309,7 +309,7 @@ curl -X POST http://device-ip/reset -d "password=YOUR_PASSWORD"
 #### setLed
 
 ```cpp
-ESP32_WiFiProvisioner& setLed(int8_t pin, bool activeLow = false)
+ESP32ProvisionToolkit& setLed(int8_t pin, bool activeLow = false)
 ```
 
 Enables LED status indicator.
@@ -338,7 +338,7 @@ provisioner.setLed(2, true);
 #### enableMDNS
 
 ```cpp
-ESP32_WiFiProvisioner& enableMDNS(const String& name)
+ESP32ProvisionToolkit& enableMDNS(const String& name)
 ```
 
 Enables mDNS responder for easy device discovery.
@@ -363,7 +363,7 @@ provisioner.enableMDNS("my-esp32");
 #### enableDoubleRebootDetect
 
 ```cpp
-ESP32_WiFiProvisioner& enableDoubleRebootDetect(
+ESP32ProvisionToolkit& enableDoubleRebootDetect(
     uint32_t windowMs = 10000
 )
 ```
@@ -391,7 +391,7 @@ provisioner.enableDoubleRebootDetect(10000); // 10 second window
 #### setLogLevel
 
 ```cpp
-ESP32_WiFiProvisioner& setLogLevel(LogLevel level)
+ESP32ProvisionToolkit& setLogLevel(LogLevel level)
 ```
 
 Sets logging verbosity level.
@@ -419,7 +419,7 @@ Sets logging verbosity level.
 #### onConnected
 
 ```cpp
-ESP32_WiFiProvisioner& onConnected(WiFiConnectedCallback callback)
+ESP32ProvisionToolkit& onConnected(WiFiConnectedCallback callback)
 ```
 
 Sets callback for WiFi connection success.
@@ -443,7 +443,7 @@ provisioner.onConnected([]() {
 #### onFailed
 
 ```cpp
-ESP32_WiFiProvisioner& onFailed(WiFiFailedCallback callback)
+ESP32ProvisionToolkit& onFailed(WiFiFailedCallback callback)
 ```
 
 Sets callback for WiFi connection failure.
@@ -467,7 +467,7 @@ provisioner.onFailed([](uint8_t retryCount) {
 #### onAPMode
 
 ```cpp
-ESP32_WiFiProvisioner& onAPMode(APModeCallback callback)
+ESP32ProvisionToolkit& onAPMode(APModeCallback callback)
 ```
 
 Sets callback for AP mode activation.
@@ -491,7 +491,7 @@ provisioner.onAPMode([](const char* ssid, const char* ip) {
 #### onReset
 
 ```cpp
-ESP32_WiFiProvisioner& onReset(ResetCallback callback)
+ESP32ProvisionToolkit& onReset(ResetCallback callback)
 ```
 
 Sets callback for device reset.
@@ -812,7 +812,7 @@ Callback type for device reset.
 
 ## Custom HTTP Routes
 
-The ESP32_WiFiProvisioner allows applications to **register custom HTTP endpoints** without accessing the internal web server directly.
+The ESP32ProvisionToolkit allows applications to **register custom HTTP endpoints** without accessing the internal web server directly.
 
 Routes are:
 
@@ -854,7 +854,7 @@ Controls **when** a route is available.
 #### addHttpRoute
 
 ```cpp
-ESP32_WiFiProvisioner& addHttpRoute(
+ESP32ProvisionToolkit& addHttpRoute(
     const String& path,
     HTTPMethod method,
     HttpRouteHandler handler,
@@ -900,7 +900,7 @@ provisioner.addHttpRoute(
 #### addGet
 
 ```cpp
-ESP32_WiFiProvisioner& addGet(
+ESP32ProvisionToolkit& addGet(
     const String& path,
     HttpRouteHandler handler,
     HttpRouteScope scope = ROUTE_CONNECTED_ONLY,
@@ -923,7 +923,7 @@ provisioner.addGet("/ping", [](WebServer& s) {
 #### addPost
 
 ```cpp
-ESP32_WiFiProvisioner& addPost(
+ESP32ProvisionToolkit& addPost(
     const String& path,
     HttpRouteHandler handler,
     HttpRouteScope scope = ROUTE_CONNECTED_ONLY,
@@ -953,7 +953,7 @@ JSON routes simplify the creation of REST-style endpoints by automatically setti
 #### addJsonRoute
 
 ```cpp
-ESP32_WiFiProvisioner& addJsonRoute(
+ESP32ProvisionToolkit& addJsonRoute(
     const String& path,
     HTTPMethod method,
     std::function<String()> jsonProvider,
@@ -985,7 +985,7 @@ provisioner.addJsonRoute(
 #### addGetJsonRoute
 
 ```cpp
-ESP32_WiFiProvisioner& addGetJsonRoute(
+ESP32ProvisionToolkit& addGetJsonRoute(
     const String& path,
     std::function<String()> jsonProvider,
     HttpRouteScope scope = ROUTE_CONNECTED_ONLY,
@@ -1008,7 +1008,7 @@ provisioner.addGetJsonRoute("/info", []() {
 #### addPostJsonRoute
 
 ```cpp
-ESP32_WiFiProvisioner& addPostJsonRoute(
+ESP32ProvisionToolkit& addPostJsonRoute(
     const String& path,
     std::function<String()> jsonProvider,
     HttpRouteScope scope = ROUTE_CONNECTED_ONLY,

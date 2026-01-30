@@ -2,8 +2,8 @@
 
 ## Installation
 ```cpp
-#include <ESP32_WiFiProvisioner.h>
-ESP32_WiFiProvisioner provisioner;
+#include <ESP32ProvisionToolkit.h>
+ESP32ProvisionToolkit provisioner;
 ```
 
 ## Basic Setup

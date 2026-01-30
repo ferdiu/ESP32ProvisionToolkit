@@ -23,10 +23,10 @@
  * 5. Once connected, access custom routes on the device IP
  */
 
-#include <ESP32_WiFiProvisioner.h>
+#include <ESP32ProvisionToolkit.h>
 
 // Create provisioner instance
-ESP32_WiFiProvisioner provisioner;
+ESP32ProvisionToolkit provisioner;
 
 // LED pin (GPIO 2 is the built-in LED on most ESP32 boards)
 const int LED_PIN = 2;

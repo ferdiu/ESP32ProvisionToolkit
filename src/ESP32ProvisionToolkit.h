@@ -1,5 +1,5 @@
 /*
- * ESP32_WiFiProvisioner.h
+ * ESP32ProvisionToolkit.h
  * Production-ready Wi-Fi provisioning and recovery system for ESP32
  *
  * Features:
@@ -154,70 +154,70 @@ typedef void (*WiFiFailedCallback)(uint8_t retryCount);
 typedef void (*APModeCallback)(const char* ssid, const char* ip);
 typedef void (*ResetCallback)();
 
-class ESP32_WiFiProvisioner {
+class ESP32ProvisionToolkit {
 public:
-    ESP32_WiFiProvisioner();
-    ~ESP32_WiFiProvisioner();
+    ESP32ProvisionToolkit();
+    ~ESP32ProvisionToolkit();
 
     // ===== Configuration API (Fluent Interface) =====
 
     // AP Settings
-    ESP32_WiFiProvisioner& setAPName(const String& name);
-    ESP32_WiFiProvisioner& setAPPassword(const String& password);
-    ESP32_WiFiProvisioner& setAPTimeout(uint32_t milliseconds);
+    ESP32ProvisionToolkit& setAPName(const String& name);
+    ESP32ProvisionToolkit& setAPPassword(const String& password);
+    ESP32ProvisionToolkit& setAPTimeout(uint32_t milliseconds);
 
     // Connection Settings
-    ESP32_WiFiProvisioner& setMaxRetries(uint8_t retries);
-    ESP32_WiFiProvisioner& setRetryDelay(uint32_t milliseconds);
-    ESP32_WiFiProvisioner& setAutoWipeOnMaxRetries(bool enable);
+    ESP32ProvisionToolkit& setMaxRetries(uint8_t retries);
+    ESP32ProvisionToolkit& setRetryDelay(uint32_t milliseconds);
+    ESP32ProvisionToolkit& setAutoWipeOnMaxRetries(bool enable);
 
     // Hardware Reset
-    ESP32_WiFiProvisioner& enableHardwareReset(int8_t pin, uint32_t durationMs = DEFAULT_RESET_BUTTON_DURATION_MS, bool activeLow = true);
-    ESP32_WiFiProvisioner& disableHardwareReset();
+    ESP32ProvisionToolkit& enableHardwareReset(int8_t pin, uint32_t durationMs = DEFAULT_RESET_BUTTON_DURATION_MS, bool activeLow = true);
+    ESP32ProvisionToolkit& disableHardwareReset();
 
     // Software Reset
-    ESP32_WiFiProvisioner& enableHttpReset(bool enable);
-    ESP32_WiFiProvisioner& enableAuthenticatedHttpReset(bool enable);
+    ESP32ProvisionToolkit& enableHttpReset(bool enable);
+    ESP32ProvisionToolkit& enableAuthenticatedHttpReset(bool enable);
 
     // UX Features
-    ESP32_WiFiProvisioner& setLed(int8_t pin, bool activeLow = false);
-    ESP32_WiFiProvisioner& enableMDNS(const String& name);
-    ESP32_WiFiProvisioner& enableDoubleRebootDetect(uint32_t windowMs = DEFAULT_DOUBLE_REBOOT_WINDOW_MS);
+    ESP32ProvisionToolkit& setLed(int8_t pin, bool activeLow = false);
+    ESP32ProvisionToolkit& enableMDNS(const String& name);
+    ESP32ProvisionToolkit& enableDoubleRebootDetect(uint32_t windowMs = DEFAULT_DOUBLE_REBOOT_WINDOW_MS);
 
     // Custom routes
-    ESP32_WiFiProvisioner& addHttpRoute(
+    ESP32ProvisionToolkit& addHttpRoute(
         const String& path,
         HTTPMethod method,
         HttpRouteHandler handler,
         HttpRouteScope scope = ROUTE_CONNECTED_ONLY,
         bool requiresAuth = false
     );
-    ESP32_WiFiProvisioner& addGet(
+    ESP32ProvisionToolkit& addGet(
         const String& path,
         HttpRouteHandler handler,
         HttpRouteScope scope = ROUTE_CONNECTED_ONLY,
         bool requiresAuth = false
     );
-    ESP32_WiFiProvisioner& addPost(
+    ESP32ProvisionToolkit& addPost(
         const String& path,
         HttpRouteHandler handler,
         HttpRouteScope scope = ROUTE_CONNECTED_ONLY,
         bool requiresAuth = false
     );
-    ESP32_WiFiProvisioner& addJsonRoute(
+    ESP32ProvisionToolkit& addJsonRoute(
         const String& path,
         HTTPMethod method,
         std::function<String()> jsonProvider,
         HttpRouteScope scope = ROUTE_CONNECTED_ONLY,
         bool requiresAuth = false
     );
-    ESP32_WiFiProvisioner& addGetJsonRoute(
+    ESP32ProvisionToolkit& addGetJsonRoute(
         const String& path,
         std::function<String()> jsonProvider,
         HttpRouteScope scope = ROUTE_CONNECTED_ONLY,
         bool requiresAuth = false
     );
-    ESP32_WiFiProvisioner& addPostJsonRoute(
+    ESP32ProvisionToolkit& addPostJsonRoute(
         const String& path,
         std::function<String()> jsonProvider,
         HttpRouteScope scope = ROUTE_CONNECTED_ONLY,
@@ -225,13 +225,13 @@ public:
     );
 
     // Logging
-    ESP32_WiFiProvisioner& setLogLevel(LogLevel level);
+    ESP32ProvisionToolkit& setLogLevel(LogLevel level);
 
     // Callbacks
-    ESP32_WiFiProvisioner& onConnected(WiFiConnectedCallback callback);
-    ESP32_WiFiProvisioner& onFailed(WiFiFailedCallback callback);
-    ESP32_WiFiProvisioner& onAPMode(APModeCallback callback);
-    ESP32_WiFiProvisioner& onReset(ResetCallback callback);
+    ESP32ProvisionToolkit& onConnected(WiFiConnectedCallback callback);
+    ESP32ProvisionToolkit& onFailed(WiFiFailedCallback callback);
+    ESP32ProvisionToolkit& onAPMode(APModeCallback callback);
+    ESP32ProvisionToolkit& onReset(ResetCallback callback);
 
     // ===== Core Control =====
     bool begin();
@@ -347,7 +347,7 @@ private:
     String generateHTML();
 
     // Static web server handlers (need access to instance)
-    static ESP32_WiFiProvisioner* _instance;
+    static ESP32ProvisionToolkit* _instance;
     static void staticHandleRoot();
     static void staticHandleScan();
     static void staticHandleSave();

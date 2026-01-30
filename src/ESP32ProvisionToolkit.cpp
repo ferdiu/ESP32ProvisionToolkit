@@ -1,13 +1,13 @@
 /*
- * ESP32_WiFiProvisioner.cpp
+ * ESP32ProvisionToolkit.cpp
  * Implementation of Wi-Fi provisioning and recovery system
  */
 
-#include "ESP32_WiFiProvisioner.h"
+#include "ESP32ProvisionToolkit.h"
 #include <esp_wifi.h>
 
 // Static instance pointer for web server callbacks
-ESP32_WiFiProvisioner* ESP32_WiFiProvisioner::_instance = nullptr;
+ESP32ProvisionToolkit* ESP32ProvisionToolkit::_instance = nullptr;
 
 // NVS namespace and keys
 #define NVS_NAMESPACE "wifiprov"
@@ -17,7 +17,7 @@ ESP32_WiFiProvisioner* ESP32_WiFiProvisioner::_instance = nullptr;
 #define NVS_BOOT_COUNT "boot_count"
 #define NVS_BOOT_TIME "boot_time"
 
-ESP32_WiFiProvisioner::ESP32_WiFiProvisioner() :
+ESP32ProvisionToolkit::ESP32ProvisionToolkit() :
     _state(STATE_INIT),
     _retryCount(0),
     _lastRetryTime(0),
@@ -36,7 +36,7 @@ ESP32_WiFiProvisioner::ESP32_WiFiProvisioner() :
     _instance = this;
 }
 
-ESP32_WiFiProvisioner::~ESP32_WiFiProvisioner() {
+ESP32ProvisionToolkit::~ESP32ProvisionToolkit() {
     if (_dnsServer) delete _dnsServer;
     if (_webServer) delete _webServer;
     _instance = nullptr;
@@ -44,37 +44,37 @@ ESP32_WiFiProvisioner::~ESP32_WiFiProvisioner() {
 
 // ===== Configuration API =====
 
-ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::setAPName(const String& name) {
+ESP32ProvisionToolkit& ESP32ProvisionToolkit::setAPName(const String& name) {
     _config.apName = name;
     return *this;
 }
 
-ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::setAPPassword(const String& password) {
+ESP32ProvisionToolkit& ESP32ProvisionToolkit::setAPPassword(const String& password) {
     _config.apPassword = password;
     return *this;
 }
 
-ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::setAPTimeout(uint32_t milliseconds) {
+ESP32ProvisionToolkit& ESP32ProvisionToolkit::setAPTimeout(uint32_t milliseconds) {
     _config.apTimeout = milliseconds;
     return *this;
 }
 
-ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::setMaxRetries(uint8_t retries) {
+ESP32ProvisionToolkit& ESP32ProvisionToolkit::setMaxRetries(uint8_t retries) {
     _config.maxRetries = retries;
     return *this;
 }
 
-ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::setRetryDelay(uint32_t milliseconds) {
+ESP32ProvisionToolkit& ESP32ProvisionToolkit::setRetryDelay(uint32_t milliseconds) {
     _config.retryDelay = milliseconds;
     return *this;
 }
 
-ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::setAutoWipeOnMaxRetries(bool enable) {
+ESP32ProvisionToolkit& ESP32ProvisionToolkit::setAutoWipeOnMaxRetries(bool enable) {
     _config.autoWipeOnMaxRetries = enable;
     return *this;
 }
 
-ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::enableHardwareReset(int8_t pin, uint32_t durationMs, bool activeLow) {
+ESP32ProvisionToolkit& ESP32ProvisionToolkit::enableHardwareReset(int8_t pin, uint32_t durationMs, bool activeLow) {
     _config.hardwareResetEnabled = true;
     _config.resetButtonPin = pin;
     _config.resetButtonDuration = durationMs;
@@ -85,24 +85,24 @@ ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::enableHardwareReset(int8_t pin, ui
     return *this;
 }
 
-ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::disableHardwareReset() {
+ESP32ProvisionToolkit& ESP32ProvisionToolkit::disableHardwareReset() {
     _config.hardwareResetEnabled = false;
     return *this;
 }
 
-ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::enableHttpReset(bool enable) {
+ESP32ProvisionToolkit& ESP32ProvisionToolkit::enableHttpReset(bool enable) {
     _config.httpResetEnabled = enable;
     _config.httpResetAuthRequired = false;
     return *this;
 }
 
-ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::enableAuthenticatedHttpReset(bool enable) {
+ESP32ProvisionToolkit& ESP32ProvisionToolkit::enableAuthenticatedHttpReset(bool enable) {
     _config.httpResetEnabled = enable;
     _config.httpResetAuthRequired = enable;
     return *this;
 }
 
-ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::setLed(int8_t pin, bool activeLow) {
+ESP32ProvisionToolkit& ESP32ProvisionToolkit::setLed(int8_t pin, bool activeLow) {
     _config.ledEnabled = true;
     _config.ledPin = pin;
     _config.ledActiveLow = activeLow;
@@ -113,46 +113,46 @@ ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::setLed(int8_t pin, bool activeLow)
     return *this;
 }
 
-ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::enableMDNS(const String& name) {
+ESP32ProvisionToolkit& ESP32ProvisionToolkit::enableMDNS(const String& name) {
     _config.mdnsEnabled = true;
     _config.mdnsName = name;
     return *this;
 }
 
-ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::enableDoubleRebootDetect(uint32_t windowMs) {
+ESP32ProvisionToolkit& ESP32ProvisionToolkit::enableDoubleRebootDetect(uint32_t windowMs) {
     _config.doubleRebootDetectEnabled = true;
     _config.doubleRebootWindow = windowMs;
     return *this;
 }
 
-ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::setLogLevel(LogLevel level) {
+ESP32ProvisionToolkit& ESP32ProvisionToolkit::setLogLevel(LogLevel level) {
     _config.logLevel = level;
     return *this;
 }
 
-ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::onConnected(WiFiConnectedCallback callback) {
+ESP32ProvisionToolkit& ESP32ProvisionToolkit::onConnected(WiFiConnectedCallback callback) {
     _onConnectedCallback = callback;
     return *this;
 }
 
-ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::onFailed(WiFiFailedCallback callback) {
+ESP32ProvisionToolkit& ESP32ProvisionToolkit::onFailed(WiFiFailedCallback callback) {
     _onFailedCallback = callback;
     return *this;
 }
 
-ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::onAPMode(APModeCallback callback) {
+ESP32ProvisionToolkit& ESP32ProvisionToolkit::onAPMode(APModeCallback callback) {
     _onAPModeCallback = callback;
     return *this;
 }
 
-ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::onReset(ResetCallback callback) {
+ESP32ProvisionToolkit& ESP32ProvisionToolkit::onReset(ResetCallback callback) {
     _onResetCallback = callback;
     return *this;
 }
 
 // ===== Core Control =====
 
-bool ESP32_WiFiProvisioner::begin() {
+bool ESP32ProvisionToolkit::begin() {
     log(LOG_INFO, "WiFiProvisioner v%s starting...", WIFI_PROVISIONER_VERSION);
 
     // Check for double-reboot detection
@@ -165,7 +165,7 @@ bool ESP32_WiFiProvisioner::begin() {
     return true;
 }
 
-void ESP32_WiFiProvisioner::loop() {
+void ESP32ProvisionToolkit::loop() {
     // Handle reset button
     if (_config.hardwareResetEnabled) {
         checkHardwareReset();
@@ -208,43 +208,43 @@ void ESP32_WiFiProvisioner::loop() {
     }
 }
 
-void ESP32_WiFiProvisioner::reset() {
+void ESP32ProvisionToolkit::reset() {
     performReset("Programmatic reset");
 }
 
 // ===== Status Query =====
 
-bool ESP32_WiFiProvisioner::isConnected() const {
+bool ESP32ProvisionToolkit::isConnected() const {
     return _state == STATE_CONNECTED && WiFi.status() == WL_CONNECTED;
 }
 
-bool ESP32_WiFiProvisioner::isProvisioning() const {
+bool ESP32ProvisionToolkit::isProvisioning() const {
     return _state == STATE_PROVISIONING || _state == STATE_PROVISIONING_ACTIVE;
 }
 
-ProvisionerState ESP32_WiFiProvisioner::getState() const {
+ProvisionerState ESP32ProvisionToolkit::getState() const {
     return _state;
 }
 
-String ESP32_WiFiProvisioner::getSSID() const {
+String ESP32ProvisionToolkit::getSSID() const {
     return _storedSSID;
 }
 
-IPAddress ESP32_WiFiProvisioner::getLocalIP() const {
+IPAddress ESP32ProvisionToolkit::getLocalIP() const {
     return WiFi.localIP();
 }
 
-String ESP32_WiFiProvisioner::getAPIP() const {
+String ESP32ProvisionToolkit::getAPIP() const {
     return WiFi.softAPIP().toString();
 }
 
 // ===== Custom Route Introspection =====
 
-bool ESP32_WiFiProvisioner::hasCustomRoutes() const {
+bool ESP32ProvisionToolkit::hasCustomRoutes() const {
     return !_customRoutes.empty();
 }
 
-bool ESP32_WiFiProvisioner::hasConnectedOnlyRoutes() const {
+bool ESP32ProvisionToolkit::hasConnectedOnlyRoutes() const {
     for (const auto& route : _customRoutes) {
         if (route.scope == ROUTE_CONNECTED_ONLY) {
             return true;
@@ -253,7 +253,7 @@ bool ESP32_WiFiProvisioner::hasConnectedOnlyRoutes() const {
     return false;
 }
 
-bool ESP32_WiFiProvisioner::hasProvisioningOnlyRoutes() const {
+bool ESP32ProvisionToolkit::hasProvisioningOnlyRoutes() const {
     for (const auto& route : _customRoutes) {
         if (route.scope == ROUTE_PROVISIONING_ONLY) {
             return true;
@@ -264,7 +264,7 @@ bool ESP32_WiFiProvisioner::hasProvisioningOnlyRoutes() const {
 
 // ===== Manual Control =====
 
-bool ESP32_WiFiProvisioner::setCredentials(const String& ssid, const String& password, bool reboot) {
+bool ESP32ProvisionToolkit::setCredentials(const String& ssid, const String& password, bool reboot) {
     if (saveCredentials(ssid, password)) {
         log(LOG_INFO, "Credentials saved: %s", ssid.c_str());
         if (reboot) {
@@ -276,7 +276,7 @@ bool ESP32_WiFiProvisioner::setCredentials(const String& ssid, const String& pas
     return false;
 }
 
-bool ESP32_WiFiProvisioner::clearCredentials(bool reboot) {
+bool ESP32ProvisionToolkit::clearCredentials(bool reboot) {
     clearAllCredentials();
     log(LOG_INFO, "Credentials cleared");
     if (reboot) {
@@ -288,7 +288,7 @@ bool ESP32_WiFiProvisioner::clearCredentials(bool reboot) {
 
 // ===== Storage =====
 
-bool ESP32_WiFiProvisioner::loadCredentials() {
+bool ESP32ProvisionToolkit::loadCredentials() {
     if (!_preferences.begin(NVS_NAMESPACE, true)) {
         log(LOG_ERROR, "Failed to open NVS");
         return false;
@@ -306,7 +306,7 @@ bool ESP32_WiFiProvisioner::loadCredentials() {
     return hasCredentials;
 }
 
-bool ESP32_WiFiProvisioner::saveCredentials(const String& ssid, const String& password) {
+bool ESP32ProvisionToolkit::saveCredentials(const String& ssid, const String& password) {
     if (!_preferences.begin(NVS_NAMESPACE, false)) {
         log(LOG_ERROR, "Failed to open NVS for writing");
         return false;
@@ -323,7 +323,7 @@ bool ESP32_WiFiProvisioner::saveCredentials(const String& ssid, const String& pa
     return true;
 }
 
-bool ESP32_WiFiProvisioner::loadResetPassword() {
+bool ESP32ProvisionToolkit::loadResetPassword() {
     if (!_preferences.begin(NVS_NAMESPACE, true)) {
         return false;
     }
@@ -334,7 +334,7 @@ bool ESP32_WiFiProvisioner::loadResetPassword() {
     return _resetPassword.length() > 0;
 }
 
-bool ESP32_WiFiProvisioner::saveResetPassword(const String& password) {
+bool ESP32ProvisionToolkit::saveResetPassword(const String& password) {
     if (!_preferences.begin(NVS_NAMESPACE, false)) {
         return false;
     }
@@ -348,7 +348,7 @@ bool ESP32_WiFiProvisioner::saveResetPassword(const String& password) {
     return true;
 }
 
-void ESP32_WiFiProvisioner::clearAllCredentials() {
+void ESP32ProvisionToolkit::clearAllCredentials() {
     if (_preferences.begin(NVS_NAMESPACE, false)) {
         _preferences.clear();
         _preferences.end();
@@ -361,11 +361,11 @@ void ESP32_WiFiProvisioner::clearAllCredentials() {
 
 // ===== State Machine =====
 
-void ESP32_WiFiProvisioner::handleStateInit() {
+void ESP32ProvisionToolkit::handleStateInit() {
     _state = STATE_LOAD_CONFIG;
 }
 
-void ESP32_WiFiProvisioner::handleStateLoadConfig() {
+void ESP32ProvisionToolkit::handleStateLoadConfig() {
     if (loadCredentials()) {
         log(LOG_INFO, "Found stored credentials for: %s", _storedSSID.c_str());
         _retryCount = 0;
@@ -377,7 +377,7 @@ void ESP32_WiFiProvisioner::handleStateLoadConfig() {
     }
 }
 
-void ESP32_WiFiProvisioner::handleStateConnecting() {
+void ESP32ProvisionToolkit::handleStateConnecting() {
     if (connectToWiFi()) {
         log(LOG_INFO, "Connected to WiFi: %s", _storedSSID.c_str());
         log(LOG_INFO, "IP Address: %s", WiFi.localIP().toString().c_str());
@@ -404,7 +404,7 @@ void ESP32_WiFiProvisioner::handleStateConnecting() {
     }
 }
 
-void ESP32_WiFiProvisioner::handleStateConnected() {
+void ESP32ProvisionToolkit::handleStateConnected() {
     // Client handling
     if (_webServer) {
         _webServer->handleClient();
@@ -419,7 +419,7 @@ void ESP32_WiFiProvisioner::handleStateConnected() {
     }
 }
 
-void ESP32_WiFiProvisioner::handleStateRetryWait() {
+void ESP32ProvisionToolkit::handleStateRetryWait() {
     if (millis() - _lastRetryTime >= _config.retryDelay) {
         _retryCount++;
 
@@ -447,12 +447,12 @@ void ESP32_WiFiProvisioner::handleStateRetryWait() {
     }
 }
 
-void ESP32_WiFiProvisioner::handleStateProvisioning() {
+void ESP32ProvisionToolkit::handleStateProvisioning() {
     startProvisioningMode();
     _state = STATE_PROVISIONING_ACTIVE;
 }
 
-void ESP32_WiFiProvisioner::handleStateProvisioningActive() {
+void ESP32ProvisionToolkit::handleStateProvisioningActive() {
     // Handle DNS requests
     if (_dnsServer) {
         _dnsServer->processNextRequest();
@@ -477,7 +477,7 @@ void ESP32_WiFiProvisioner::handleStateProvisioningActive() {
 
 // ===== Connection =====
 
-bool ESP32_WiFiProvisioner::connectToWiFi() {
+bool ESP32ProvisionToolkit::connectToWiFi() {
     WiFi.mode(WIFI_STA);
     WiFi.begin(_storedSSID.c_str(), _storedPassword.c_str());
 
@@ -491,14 +491,14 @@ bool ESP32_WiFiProvisioner::connectToWiFi() {
     return WiFi.status() == WL_CONNECTED;
 }
 
-void ESP32_WiFiProvisioner::disconnectWiFi() {
+void ESP32ProvisionToolkit::disconnectWiFi() {
     WiFi.disconnect(true);
     WiFi.mode(WIFI_OFF);
 }
 
 // ===== Provisioning =====
 
-void ESP32_WiFiProvisioner::startProvisioningMode() {
+void ESP32ProvisionToolkit::startProvisioningMode() {
     log(LOG_INFO, "Starting provisioning mode");
 
     // Stop any existing connection
@@ -552,7 +552,7 @@ void ESP32_WiFiProvisioner::startProvisioningMode() {
     }
 }
 
-void ESP32_WiFiProvisioner::stopProvisioningMode() {
+void ESP32ProvisionToolkit::stopProvisioningMode() {
     log(LOG_INFO, "Stopping provisioning mode");
 
     if (_dnsServer) {
@@ -564,7 +564,7 @@ void ESP32_WiFiProvisioner::stopProvisioningMode() {
     WiFi.softAPdisconnect(true);
 }
 
-void ESP32_WiFiProvisioner::setupWebServerProvisioningMode() {
+void ESP32ProvisionToolkit::setupWebServerProvisioningMode() {
     if (!_webServer) {
         _webServer = new WebServer(WEB_SERVER_PORT);
     }
@@ -590,12 +590,12 @@ void ESP32_WiFiProvisioner::setupWebServerProvisioningMode() {
 
 // ===== Web Server Handlers =====
 
-void ESP32_WiFiProvisioner::handleRoot() {
+void ESP32ProvisionToolkit::handleRoot() {
     String html = generateHTML();
     _webServer->send(200, "text/html", html);
 }
 
-void ESP32_WiFiProvisioner::handleScan() {
+void ESP32ProvisionToolkit::handleScan() {
     log(LOG_DEBUG, "Scanning for networks...");
 
     int n = WiFi.scanNetworks();
@@ -617,7 +617,7 @@ void ESP32_WiFiProvisioner::handleScan() {
     _webServer->send(200, "application/json", json);
 }
 
-void ESP32_WiFiProvisioner::handleSave() {
+void ESP32ProvisionToolkit::handleSave() {
     String ssid = _webServer->arg("ssid");
     String password = _webServer->arg("password");
     String resetPwd = _webServer->arg("reset_password");
@@ -647,12 +647,12 @@ void ESP32_WiFiProvisioner::handleSave() {
     ESP.restart();
 }
 
-void ESP32_WiFiProvisioner::handleSaveGet() {
+void ESP32ProvisionToolkit::handleSaveGet() {
     log(LOG_INFO, "Sending saved status to the client");
     _webServer->send(200, "text/plain", "OK");
 }
 
-void ESP32_WiFiProvisioner::handleReset() {
+void ESP32ProvisionToolkit::handleReset() {
     if (!_config.httpResetEnabled) {
         _webServer->send(403, "text/plain", "Reset disabled");
         return;
@@ -682,7 +682,7 @@ void ESP32_WiFiProvisioner::handleReset() {
     performReset("HTTP reset");
 }
 
-void ESP32_WiFiProvisioner::handleNotFound() {
+void ESP32ProvisionToolkit::handleNotFound() {
     log(LOG_DEBUG, "NotFound: %s %s",
         _webServer->method() == HTTP_GET ? "GET" : "POST",
         _webServer->uri().c_str());
@@ -693,33 +693,33 @@ void ESP32_WiFiProvisioner::handleNotFound() {
 }
 
 // Static web server handlers
-void ESP32_WiFiProvisioner::staticHandleRoot() {
+void ESP32ProvisionToolkit::staticHandleRoot() {
     if (_instance) _instance->handleRoot();
 }
 
-void ESP32_WiFiProvisioner::staticHandleScan() {
+void ESP32ProvisionToolkit::staticHandleScan() {
     if (_instance) _instance->handleScan();
 }
 
-void ESP32_WiFiProvisioner::staticHandleSave() {
+void ESP32ProvisionToolkit::staticHandleSave() {
     if (_instance) _instance->handleSave();
 }
 
-void ESP32_WiFiProvisioner::staticHandleSaveGet() {
+void ESP32ProvisionToolkit::staticHandleSaveGet() {
     if (_instance) _instance->handleSaveGet();
 }
 
-void ESP32_WiFiProvisioner::staticHandleReset() {
+void ESP32ProvisionToolkit::staticHandleReset() {
     if (_instance) _instance->handleReset();
 }
 
-void ESP32_WiFiProvisioner::staticHandleNotFound() {
+void ESP32ProvisionToolkit::staticHandleNotFound() {
     if (_instance) _instance->handleNotFound();
 }
 
 // ===== Reset Mechanisms =====
 
-void ESP32_WiFiProvisioner::checkHardwareReset() {
+void ESP32ProvisionToolkit::checkHardwareReset() {
     bool buttonState = digitalRead(_config.resetButtonPin);
     bool isPressed = _config.resetButtonActiveLow ? (buttonState == LOW) : (buttonState == HIGH);
 
@@ -739,7 +739,7 @@ void ESP32_WiFiProvisioner::checkHardwareReset() {
     }
 }
 
-void ESP32_WiFiProvisioner::checkDoubleReboot() {
+void ESP32ProvisionToolkit::checkDoubleReboot() {
     if (!_preferences.begin(NVS_NAMESPACE, false)) {
         return;
     }
@@ -767,7 +767,7 @@ void ESP32_WiFiProvisioner::checkDoubleReboot() {
     // This would normally be done with a timer, but we'll handle it in the main loop
 }
 
-void ESP32_WiFiProvisioner::performReset(const char* reason) {
+void ESP32ProvisionToolkit::performReset(const char* reason) {
     log(LOG_INFO, "Performing reset: %s", reason);
 
     if (_onResetCallback) {
@@ -781,7 +781,7 @@ void ESP32_WiFiProvisioner::performReset(const char* reason) {
 
 // ===== Web server controls =====
 
-void ESP32_WiFiProvisioner::startConnectedWebServer() {
+void ESP32ProvisionToolkit::startConnectedWebServer() {
     bool hasCustomRoutes = hasConnectedOnlyRoutes();
 
     // Only start if software reset is enabled
@@ -817,7 +817,7 @@ void ESP32_WiFiProvisioner::startConnectedWebServer() {
     log(LOG_INFO, "Connected-mode web server started on port %d", WEB_SERVER_PORT);
 }
 
-void ESP32_WiFiProvisioner::stopWebServer() {
+void ESP32ProvisionToolkit::stopWebServer() {
     if (_webServer) {
         _webServer->stop();
         delete _webServer;
@@ -828,7 +828,7 @@ void ESP32_WiFiProvisioner::stopWebServer() {
 
 // ===== UX =====
 
-void ESP32_WiFiProvisioner::updateLED() {
+void ESP32ProvisionToolkit::updateLED() {
     // LED is controlled by pattern set in setLEDPattern
     // This is a simple implementation; could be enhanced with more patterns
 
@@ -870,14 +870,14 @@ void ESP32_WiFiProvisioner::updateLED() {
     }
 }
 
-void ESP32_WiFiProvisioner::setLEDPattern(uint32_t onTime, uint32_t offTime) {
+void ESP32ProvisionToolkit::setLEDPattern(uint32_t onTime, uint32_t offTime) {
     // This is handled directly in updateLED for simplicity
     // A more sophisticated implementation would store patterns
 }
 
 // ===== Custom routes =====
 
-void ESP32_WiFiProvisioner::registerCustomRoutes(HttpRouteScope activeScope) {
+void ESP32ProvisionToolkit::registerCustomRoutes(HttpRouteScope activeScope) {
     if (!_webServer) return;
 
     for (const auto& route : _customRoutes) {
@@ -911,7 +911,7 @@ void ESP32_WiFiProvisioner::registerCustomRoutes(HttpRouteScope activeScope) {
     }
 }
 
-ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::addHttpRoute(
+ESP32ProvisionToolkit& ESP32ProvisionToolkit::addHttpRoute(
     const String& path,
     HTTPMethod method,
     HttpRouteHandler handler,
@@ -930,7 +930,7 @@ ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::addHttpRoute(
     return *this;
 }
 
-ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::addGet(
+ESP32ProvisionToolkit& ESP32ProvisionToolkit::addGet(
     const String& path,
     HttpRouteHandler handler,
     HttpRouteScope scope,
@@ -939,7 +939,7 @@ ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::addGet(
     return addHttpRoute(path, HTTP_GET, handler, scope, requiresAuth);
 }
 
-ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::addPost(
+ESP32ProvisionToolkit& ESP32ProvisionToolkit::addPost(
     const String& path,
     HttpRouteHandler handler,
     HttpRouteScope scope,
@@ -948,7 +948,7 @@ ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::addPost(
     return addHttpRoute(path, HTTP_POST, handler, scope, requiresAuth);
 }
 
-ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::addJsonRoute(
+ESP32ProvisionToolkit& ESP32ProvisionToolkit::addJsonRoute(
     const String& path,
     HTTPMethod method,
     std::function<String()> jsonProvider,
@@ -966,7 +966,7 @@ ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::addJsonRoute(
     );
 }
 
-ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::addGetJsonRoute(
+ESP32ProvisionToolkit& ESP32ProvisionToolkit::addGetJsonRoute(
     const String& path,
     std::function<String()> jsonProvider,
     HttpRouteScope scope,
@@ -975,7 +975,7 @@ ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::addGetJsonRoute(
     return addJsonRoute(path, HTTP_GET, jsonProvider, scope, requiresAuth);
 }
 
-ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::addPostJsonRoute(
+ESP32ProvisionToolkit& ESP32ProvisionToolkit::addPostJsonRoute(
     const String& path,
     std::function<String()> jsonProvider,
     HttpRouteScope scope,
@@ -986,7 +986,7 @@ ESP32_WiFiProvisioner& ESP32_WiFiProvisioner::addPostJsonRoute(
 
 // ===== Utilities =====
 
-void ESP32_WiFiProvisioner::log(LogLevel level, const char* format, ...) {
+void ESP32ProvisionToolkit::log(LogLevel level, const char* format, ...) {
     if (level > _config.logLevel) return;
 
     const char* levelStr;
@@ -1006,7 +1006,7 @@ void ESP32_WiFiProvisioner::log(LogLevel level, const char* format, ...) {
     Serial.printf("[WiFiProv][%s] %s\n", levelStr, buffer);
 }
 
-String ESP32_WiFiProvisioner::getMACAddress() {
+String ESP32ProvisionToolkit::getMACAddress() {
     uint8_t mac[6];
     esp_wifi_get_mac(WIFI_IF_STA, mac);
 
@@ -1017,7 +1017,7 @@ String ESP32_WiFiProvisioner::getMACAddress() {
     return String(macStr);
 }
 
-String ESP32_WiFiProvisioner::hashPassword(const String& password) {
+String ESP32ProvisionToolkit::hashPassword(const String& password) {
     // Simple SHA-256 hash
     byte shaResult[32];
 
@@ -1041,11 +1041,11 @@ String ESP32_WiFiProvisioner::hashPassword(const String& password) {
     return hash;
 }
 
-bool ESP32_WiFiProvisioner::verifyPassword(const String& password, const String& hash) {
+bool ESP32ProvisionToolkit::verifyPassword(const String& password, const String& hash) {
     return hashPassword(password) == hash;
 }
 
-String ESP32_WiFiProvisioner::generateHTML() {
+String ESP32ProvisionToolkit::generateHTML() {
     String html = R"(
 <!DOCTYPE html>
 <html lang="en">
