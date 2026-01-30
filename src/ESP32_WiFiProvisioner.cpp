@@ -535,6 +535,9 @@ void ESP32_WiFiProvisioner::setupWebServer() {
     _webServer->on("/scan", HTTP_GET, staticHandleScan);
     _webServer->on("/save", HTTP_POST, staticHandleSave);
 
+    // This avoid captive portals redirect after form submission
+    _webServer->on("/save", HTTP_GET, staticHandleSaveGet);
+
     if (_config.httpResetEnabled) {
         _webServer->on("/reset", HTTP_POST, staticHandleReset);
     }
@@ -604,6 +607,11 @@ void ESP32_WiFiProvisioner::handleSave() {
     ESP.restart();
 }
 
+void ESP32_WiFiProvisioner::handleSaveGet() {
+    log(LOG_INFO, "Sending saved status to the client");
+    _webServer->send(200, "text/plain", "OK");
+}
+
 void ESP32_WiFiProvisioner::handleReset() {
     if (!_config.httpResetEnabled) {
         _webServer->send(403, "text/plain", "Reset disabled");
@@ -635,6 +643,10 @@ void ESP32_WiFiProvisioner::handleReset() {
 }
 
 void ESP32_WiFiProvisioner::handleNotFound() {
+    log(LOG_DEBUG, "NotFound: %s %s",
+        _webServer->method() == HTTP_GET ? "GET" : "POST",
+        _webServer->uri().c_str());
+
     // Captive portal redirect
     _webServer->sendHeader("Location", "/", true);
     _webServer->send(302, "text/plain", "");
@@ -651,6 +663,10 @@ void ESP32_WiFiProvisioner::staticHandleScan() {
 
 void ESP32_WiFiProvisioner::staticHandleSave() {
     if (_instance) _instance->handleSave();
+}
+
+void ESP32_WiFiProvisioner::staticHandleSaveGet() {
+    if (_instance) _instance->handleSaveGet();
 }
 
 void ESP32_WiFiProvisioner::staticHandleReset() {
@@ -1047,11 +1063,11 @@ String ESP32_WiFiProvisioner::generateHTML() {
         <div class="content">
             <div id="status" class="status hidden"></div>
 
-            <button class="scan-btn" onclick="scanNetworks()">Scan for Networks</button>
+            <button class="scan-btn" onclick="scanNetworks();">Scan for Networks</button>
 
             <div id="networks" class="network-list hidden"></div>
 
-            <form id="configForm" onsubmit="saveConfig(event)">
+            <form id="configForm" onsubmit="return saveConfig(event);">
                 <div class="form-group">
                     <label for="ssid">Network Name (SSID)</label>
                     <input type="text" id="ssid" name="ssid" required placeholder="Enter or select network">
@@ -1067,7 +1083,7 @@ String ESP32_WiFiProvisioner::generateHTML() {
     // Add reset password field if authentication is enabled
     if (_config.httpResetAuthRequired) {
         html += R"(
-                <button type="button" class="toggle-advanced" onclick="toggleAdvanced()">Advanced Options</button>
+                <button type="button" class="toggle-advanced" onclick="toggleAdvanced();">Advanced Options</button>
 
                 <div id="advanced" class="advanced hidden">
                     <div class="form-group">
@@ -1130,7 +1146,7 @@ String ESP32_WiFiProvisioner::generateHTML() {
                     const lock = network.secure ? '<span class="lock-icon"></span>' : '';
 
                     return `
-                        <div class="network-item" onclick="selectNetwork(${index})">
+                        <div class="network-item" onclick="selectNetwork(${index});">
                             <span>${network.ssid}</span>
                             <span class="signal">${bars} ${lock}</span>
                         </div>
@@ -1159,6 +1175,7 @@ String ESP32_WiFiProvisioner::generateHTML() {
         }
 
         function saveConfig(event) {
+            // Prevent the form to trigger default behaviour (pt. 1)
             event.preventDefault();
 
             const formData = new FormData(event.target);
@@ -1187,6 +1204,9 @@ String ESP32_WiFiProvisioner::generateHTML() {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Save Configuration';
             });
+
+            // Prevent the form to trigger default behaviour (pt. 2)
+            return false;
         }
 
         // Auto-scan on load

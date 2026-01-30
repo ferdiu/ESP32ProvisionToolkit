@@ -251,6 +251,7 @@ private:
     void handleRoot();
     void handleScan();
     void handleSave();
+    void handleSaveGet();
     void handleReset();
     void handleNotFound();
 
@@ -275,6 +276,7 @@ private:
     static void staticHandleRoot();
     static void staticHandleScan();
     static void staticHandleSave();
+    static void staticHandleSaveGet();
     static void staticHandleReset();
     static void staticHandleNotFound();
 };
