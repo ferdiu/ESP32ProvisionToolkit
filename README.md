@@ -1,4 +1,4 @@
-# ESP32 Provision Toolkitd
+# ESP32 Provision Toolkit
 
 A production-ready WiFi provisioning and recovery library for ESP32 devices. Designed for real IoT products with robust error handling, multiple reset mechanisms, and configurable UX features.
 
