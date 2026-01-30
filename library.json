@@ -1,6 +1,6 @@
 {
   "name": "ESP32ProvisionToolkit",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Production-ready WiFi provisioning and recovery system for ESP32 with captive portal, multiple reset mechanisms, and configurable UX enhancements",
   "keywords": [
     "wifi",

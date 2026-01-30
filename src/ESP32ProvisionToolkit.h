@@ -29,7 +29,7 @@
 #include <vector>
 
 // Library version
-#define WIFI_PROVISIONER_VERSION "1.0.0"
+#define WIFI_PROVISIONER_VERSION "1.0.1"
 
 // Default configuration values
 #define DEFAULT_AP_NAME "ESP32-Config"

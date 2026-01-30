@@ -510,6 +510,9 @@ MIT License - See LICENSE file for details
 
 ## Changelog
 
+### Version 1.0.1 (2026-01-30)
+- Documentation update
+
 ### Version 1.0.0 (2026-01-30)
 - Initial release
 - Complete WiFi provisioning system

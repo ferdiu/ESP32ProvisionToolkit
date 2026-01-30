@@ -999,7 +999,7 @@ Registers a JSON `GET` route.
 
 ```cpp
 provisioner.addGetJsonRoute("/info", []() {
-    return "{\"device\":\"esp32\",\"version\":\"1.0.0\"}";
+    return "{\"device\":\"esp32\",\"version\":\"1.0.1\"}";
 });
 ```
 
@@ -1204,7 +1204,7 @@ Internal configuration structure. Not directly accessible; use setter methods in
 ## Constants
 
 ```cpp
-#define WIFI_PROVISIONER_VERSION "1.0.0"
+#define WIFI_PROVISIONER_VERSION "1.0.1"
 #define DEFAULT_AP_NAME "ESP32-Config"
 #define DEFAULT_AP_PASSWORD ""
 #define DEFAULT_MAX_RETRIES 10
