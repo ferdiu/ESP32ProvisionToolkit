@@ -247,7 +247,7 @@ private:
     // Provisioning
     void startProvisioningMode();
     void stopProvisioningMode();
-    void setupWebServer();
+    void setupWebServerProvisioningMode();
     void handleRoot();
     void handleScan();
     void handleSave();
@@ -259,6 +259,10 @@ private:
     void checkHardwareReset();
     void checkDoubleReboot();
     void performReset(const char* reason);
+
+    // Connected-mode web server
+    void startConnectedWebServer();
+    void stopWebServer();
 
     // UX
     void updateLED();

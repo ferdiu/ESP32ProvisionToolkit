@@ -368,6 +368,9 @@ void ESP32_WiFiProvisioner::handleStateConnecting() {
         _state = STATE_CONNECTED;
         setLEDPattern(0, 0); // Solid on
 
+        // Start minimal web server if reset is enabled
+        startConnectedWebServer();
+
         if (_onConnectedCallback) {
             _onConnectedCallback();
         }
@@ -378,6 +381,11 @@ void ESP32_WiFiProvisioner::handleStateConnecting() {
 }
 
 void ESP32_WiFiProvisioner::handleStateConnected() {
+    // Client handling
+    if (_webServer) {
+        _webServer->handleClient();
+    }
+
     // Check if still connected
     if (WiFi.status() != WL_CONNECTED) {
         log(LOG_ERROR, "WiFi connection lost");
@@ -472,6 +480,9 @@ void ESP32_WiFiProvisioner::startProvisioningMode() {
     // Stop any existing connection
     disconnectWiFi();
 
+    // Stop any existing webserver
+    stopWebServer();
+
     // Create unique AP name
     String apName = _config.apName + "-" + getMACAddress().substring(9);
     apName.replace(":", "");
@@ -502,7 +513,7 @@ void ESP32_WiFiProvisioner::startProvisioningMode() {
     }
 
     // Start web server
-    setupWebServer();
+    setupWebServerProvisioningMode();
 
     _apStartTime = millis();
     setLEDPattern(100, 100); // Fast blink
@@ -519,14 +530,12 @@ void ESP32_WiFiProvisioner::stopProvisioningMode() {
         _dnsServer->stop();
     }
 
-    if (_webServer) {
-        _webServer->stop();
-    }
+    stopWebServer();
 
     WiFi.softAPdisconnect(true);
 }
 
-void ESP32_WiFiProvisioner::setupWebServer() {
+void ESP32_WiFiProvisioner::setupWebServerProvisioningMode() {
     if (!_webServer) {
         _webServer = new WebServer(WEB_SERVER_PORT);
     }
@@ -737,6 +746,48 @@ void ESP32_WiFiProvisioner::performReset(const char* reason) {
     clearAllCredentials();
     delay(500);
     ESP.restart();
+}
+
+// ===== Web server controls =====
+
+void ESP32_WiFiProvisioner::startConnectedWebServer() {
+    // Only start if software reset is enabled
+    if (!_config.httpResetEnabled) {
+        log(LOG_DEBUG, "HTTP reset disabled, not starting connected web server");
+        return;
+    }
+
+    if (_webServer) {
+        return; // Already running
+    }
+
+    _webServer = new WebServer(WEB_SERVER_PORT);
+
+    // Reset endpoint
+    _webServer->on("/reset", HTTP_POST, staticHandleReset);
+
+    // Optional: simple status endpoint (very useful)
+    _webServer->on("/status", HTTP_GET, [this]() {
+        String json = "{";
+        json += "\"state\":\"connected\",";
+        json += "\"ssid\":\"" + _storedSSID + "\",";
+        json += "\"ip\":\"" + WiFi.localIP().toString() + "\"";
+        json += "}";
+        _webServer->send(200, "application/json", json);
+    });
+
+    _webServer->begin();
+
+    log(LOG_INFO, "Connected-mode web server started on port %d", WEB_SERVER_PORT);
+}
+
+void ESP32_WiFiProvisioner::stopWebServer() {
+    if (_webServer) {
+        _webServer->stop();
+        delete _webServer;
+        _webServer = nullptr;
+        log(LOG_DEBUG, "Web server stopped");
+    }
 }
 
 // ===== UX =====
