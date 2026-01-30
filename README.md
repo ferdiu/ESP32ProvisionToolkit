@@ -507,7 +507,6 @@ MIT License - See LICENSE file for details
 ## Support
 
 - **Issues**: [GitHub Issues](https://github.com/ferdiu/ESP32ProvisionToolkit/issues)
-- **Email**: ferdiu.manzella@gmail.com
 
 ## Changelog
 
